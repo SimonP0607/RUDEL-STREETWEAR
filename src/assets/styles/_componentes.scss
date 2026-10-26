@@ -1,0 +1,255 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+.contenedor {
+  width: min(100% - 2.5rem, #{$ancho-maximo});
+  margin-inline: auto;
+
+  @include hasta($movil) {
+    width: min(100% - 1.5rem, #{$ancho-maximo});
+  }
+}
+
+.boton {
+  @include etiqueta-texto(0.78rem);
+  @include borde;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  padding: 0.6rem 1.25rem;
+  background: var(--superficie);
+  color: var(--texto);
+  border-radius: $radio;
+  transition:
+    background $transicion,
+    color $transicion,
+    transform $transicion,
+    box-shadow $transicion;
+
+  &:hover {
+    background: var(--texto);
+    color: var(--fondo);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &--acento {
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-color: var(--sobre-acento);
+
+    &:hover {
+      background: var(--sobre-acento);
+      color: var(--acento);
+    }
+  }
+
+  &--relleno {
+    background: var(--texto);
+    color: var(--fondo);
+
+    &:hover {
+      background: var(--acento);
+      color: var(--sobre-acento);
+    }
+  }
+
+  &--fantasma {
+    background: transparent;
+  }
+
+  &--peligro {
+    border-color: var(--alerta);
+    color: var(--alerta);
+
+    &:hover {
+      background: var(--alerta);
+      color: #fff;
+    }
+  }
+
+  &--pequeno {
+    min-height: 2.2rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.68rem;
+  }
+
+  &--bloque {
+    width: 100%;
+  }
+}
+
+.enlace-texto {
+  @include etiqueta-texto(0.74rem);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.1rem;
+
+  &:hover {
+    color: var(--acento-oscuro);
+  }
+
+  .tema-oscuro &:hover {
+    color: var(--acento);
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &__etiqueta {
+    @include etiqueta-texto(0.7rem);
+    color: var(--texto-suave);
+  }
+
+  &__control {
+    @include borde;
+    width: 100%;
+    min-height: 2.9rem;
+    padding: 0.55rem 0.8rem;
+    background: var(--superficie);
+    color: var(--texto);
+    border-radius: $radio;
+    transition: box-shadow $transicion;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--acento);
+    }
+
+    &::placeholder {
+      color: var(--texto-gris);
+    }
+  }
+
+  textarea.campo__control {
+    min-height: 6rem;
+    resize: vertical;
+  }
+
+  &__ayuda {
+    font-size: 0.8rem;
+    color: var(--texto-gris);
+  }
+
+  &--casilla {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+
+    input {
+      width: 1.1rem;
+      height: 1.1rem;
+      accent-color: var(--acento-oscuro);
+    }
+  }
+}
+
+.mensaje {
+  @include borde;
+  padding: 0.7rem 0.9rem;
+  border-radius: $radio;
+  font-size: 0.9rem;
+  background: var(--superficie);
+
+  &--error {
+    border-color: var(--alerta);
+    color: var(--alerta);
+  }
+
+  &--exito {
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-color: var(--sobre-acento);
+  }
+}
+
+.estado {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--texto-suave);
+
+  &__titulo {
+    @include display(2rem, 6vw, 4rem, 700);
+    color: var(--texto);
+    margin-bottom: 0.6rem;
+  }
+}
+
+.tabla-envoltura {
+  @include borde;
+  overflow-x: auto;
+  border-radius: $radio;
+  background: var(--superficie);
+}
+
+.tabla {
+  width: 100%;
+  min-width: 52rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+
+  th,
+  td {
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--linea-suave);
+  }
+
+  th {
+    @include etiqueta-texto(0.68rem);
+    color: var(--texto-suave);
+    background: var(--superficie-2);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  tbody tr:hover td {
+    background: color-mix(in srgb, var(--acento) 10%, transparent);
+  }
+
+  &__acciones {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  &__numero {
+    font-family: $fuente-mono;
+    text-align: right;
+  }
+}
+
+.chip {
+  @include etiqueta-texto(0.64rem);
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--linea-suave);
+  border-radius: $radio;
+  color: var(--texto-suave);
+
+  &--activo {
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-color: var(--sobre-acento);
+  }
+
+  &--inactivo {
+    text-decoration: line-through;
+  }
+}

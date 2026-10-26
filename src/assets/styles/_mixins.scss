@@ -1,0 +1,40 @@
+@use 'tokens' as *;
+
+@mixin hasta($ancho) {
+  @media (max-width: $ancho) {
+    @content;
+  }
+}
+
+@mixin desde($ancho) {
+  @media (min-width: ($ancho + 1px)) {
+    @content;
+  }
+}
+
+@mixin etiqueta-texto($tamano: 0.72rem) {
+  font-family: $fuente-mono;
+  font-size: $tamano;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@mixin display($min: 2.4rem, $ideal: 7vw, $max: 6rem, $peso: 800) {
+  font-family: $fuente-display;
+  font-weight: $peso;
+  font-size: clamp($min, $ideal, $max);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+@mixin borde {
+  border: $borde solid var(--linea);
+}
+
+@mixin foco {
+  &:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 3px;
+  }
+}
