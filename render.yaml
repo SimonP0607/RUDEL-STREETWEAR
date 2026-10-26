@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: rudel-streetwear-backend
+    runtime: node
+    plan: free
+    rootDir: rudel-streetwear-backend
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PROXIES_CONFIABLES
+        value: 2
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: ADMIN_USUARIO
+        sync: false
+      - key: ADMIN_CONTRASENA
+        sync: false
