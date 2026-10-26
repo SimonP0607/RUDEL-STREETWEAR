@@ -17,6 +17,8 @@ module.exports = {
   apiUrl,
   mongoUri: process.env.MONGODB_URI,
   jwtSecreto: process.env.JWT_SECRET || 'rudel-secreto-solo-para-desarrollo',
+  adminUsuario: process.env.ADMIN_USUARIO || 'admin',
+  adminContrasena: process.env.ADMIN_CONTRASENA,
   horasSesion: Number(process.env.HORAS_SESION) || 8,
   proxiesConfiables: Number(process.env.PROXIES_CONFIABLES ?? 1),
   origenesPermitidos: [...new Set([...origenesFrontend, new URL(apiUrl).origin])],

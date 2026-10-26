@@ -109,4 +109,11 @@ async function guardarAdministrador(usuario, contrasena, nombre = 'Administrador
   return administrador;
 }
 
-module.exports = { cargarCatalogo, guardarAdministrador };
+async function asegurarAdministrador(usuario, contrasena) {
+  const clave = usuario.trim().toLowerCase();
+  const existente = await Administrador.findOne({ usuario: clave }).select('+contrasena');
+  if (existente && (await existente.compararContrasena(contrasena))) return existente;
+  return guardarAdministrador(clave, contrasena);
+}
+
+module.exports = { cargarCatalogo, guardarAdministrador, asegurarAdministrador };

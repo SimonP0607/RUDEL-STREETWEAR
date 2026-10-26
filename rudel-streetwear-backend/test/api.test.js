@@ -257,3 +257,15 @@ describe('Documentación', () => {
     assert.match(respuesta.text, /swagger-ui/);
   });
 });
+
+describe('Cuenta del administrador', () => {
+  test('al cambiar la contraseña en las variables de entorno se actualiza la cuenta', async () => {
+    const { asegurarAdministrador } = require('../datos/semilla');
+    await asegurarAdministrador('admin', 'NuevaClave2026');
+    const anterior = await request(app).post('/api/auth/login').send(ADMIN);
+    assert.equal(anterior.status, 401);
+    const nueva = await request(app).post('/api/auth/login').send({ usuario: 'admin', contrasena: 'NuevaClave2026' });
+    assert.equal(nueva.status, 200);
+    await asegurarAdministrador('admin', ADMIN.contrasena);
+  });
+});
