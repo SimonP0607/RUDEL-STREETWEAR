@@ -88,6 +88,7 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
   &:focus-within {
     transform: rotate(0deg) translateY(-6px);
     z-index: 2;
+    animation: columpio 0.9s ease-out;
   }
 
   &__cordon {
@@ -118,6 +119,7 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
 
   &__ojal {
     position: absolute;
+    z-index: 3;
     top: 0.55rem;
     left: 50%;
     width: 0.8rem;
@@ -129,15 +131,18 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
   }
 
   &__sello {
-    @include etiqueta-texto(0.6rem);
+    @include etiqueta-texto(0.66rem);
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    padding: 0.2rem 0.5rem;
+    z-index: 3;
+    top: 0.5rem;
+    right: -0.5rem;
+    padding: 0.28rem 0.65rem;
     background: var(--acento);
     border: 1px solid var(--linea);
     border-radius: $radio;
-    transform: rotate(3deg);
+    box-shadow: 2px 3px 0 var(--linea);
+    transform: rotate(4deg);
+    animation: latir 2.4s ease-in-out infinite;
 
     &--agotado {
       background: var(--superficie-2);
@@ -164,7 +169,10 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
       transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 
     &--alterna {
-      opacity: 0;
+      clip-path: inset(100% 0 0 0);
+      transition:
+        clip-path 0.55s cubic-bezier(0.7, 0, 0.2, 1),
+        transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .etiqueta:hover &,
@@ -174,7 +182,7 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
 
     .etiqueta:hover &--alterna,
     .etiqueta:focus-within &--alterna {
-      opacity: 1;
+      clip-path: inset(0);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -241,6 +249,30 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
       border-color: var(--linea-suave);
       text-decoration: line-through;
     }
+  }
+}
+
+@keyframes columpio {
+  0% {
+    transform: rotate(var(--giro));
+  }
+
+  30% {
+    transform: rotate(calc(var(--giro) * -1 - 2.2deg)) translateY(-6px);
+  }
+
+  60% {
+    transform: rotate(1.1deg) translateY(-6px);
+  }
+
+  100% {
+    transform: rotate(0deg) translateY(-6px);
+  }
+}
+
+@keyframes latir {
+  50% {
+    transform: rotate(4deg) scale(1.08);
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Categoria, Producto } from '@/types'
 import { categoriasApi } from '@/services/categorias'
@@ -7,6 +7,9 @@ import { productosApi } from '@/services/productos'
 import { nombreCategoria } from '@/utils/categoria'
 import FiltroCategorias from '@/components/FiltroCategorias.vue'
 import TarjetaProducto from '@/components/TarjetaProducto.vue'
+import PortadaFotos from '@/components/PortadaFotos.vue'
+import CintaFotos from '@/components/CintaFotos.vue'
+import { vRevelar } from '@/directives/revelar'
 
 const ruta = useRoute()
 const router = useRouter()
@@ -28,6 +31,25 @@ const conteos = computed<Record<string, number>>(() =>
 )
 
 const totalActivos = computed(() => categorias.value.reduce((suma, c) => suma + (c.productosActivos ?? 0), 0))
+
+const totalMostrado = ref(0)
+let cuadro = 0
+
+function contarHasta(meta: number) {
+  cancelAnimationFrame(cuadro)
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    totalMostrado.value = meta
+    return
+  }
+  const inicio = totalMostrado.value
+  const t0 = performance.now()
+  const paso = (t: number) => {
+    const avance = Math.min((t - t0) / 900, 1)
+    totalMostrado.value = Math.round(inicio + (meta - inicio) * (1 - (1 - avance) ** 3))
+    if (avance < 1) cuadro = requestAnimationFrame(paso)
+  }
+  cuadro = requestAnimationFrame(paso)
+}
 
 const tituloSeccion = computed(() => {
   if (!categoriaSeleccionada.value) return 'Todo el catálogo'
@@ -66,6 +88,10 @@ onMounted(() => Promise.all([cargarCategorias(), cargarProductos()]))
 
 watch(categoriaSeleccionada, cargarProductos)
 
+watch(totalActivos, contarHasta)
+
+onBeforeUnmount(() => cancelAnimationFrame(cuadro))
+
 watch(categorias, (lista) => {
   if (categoriaSeleccionada.value && lista.length && !lista.some((c) => c._id === categoriaSeleccionada.value)) {
     seleccionarCategoria(null)
@@ -81,20 +107,16 @@ watch(categorias, (lista) => {
         <span class="portada__linea portada__linea--acento">urbana</span>
         <span class="portada__linea">por talla</span>
       </h1>
-      <figure class="portada__foto">
-        <img src="/productos/portada-rudel.webp" alt="Modelos con las camisetas Acid Wash de RUDEL" width="800" height="1000" fetchpriority="high" />
-        <figcaption class="portada__pie">Drop Acid Wash · fotos reales de la marca</figcaption>
-      </figure>
+      <PortadaFotos class="portada__foto" />
       <div class="portada__texto">
-        <p class="portada__descripcion">
-          Camisetas oversize, acid wash, croptops y esqueletos de RUDEL. Cada etiqueta muestra el precio y las tallas
-          que quedan; elige una prenda para ver el detalle y agregarla a tu carrito.
-        </p>
+        <p class="portada__descripcion">Oversize, acid wash, croptops y esqueletos. Elige tu talla.</p>
         <p class="portada__dato">
-          <span class="portada__numero">{{ totalActivos }}</span> prendas en catálogo
+          <span class="portada__numero">{{ totalMostrado }}</span> prendas en catálogo
         </p>
       </div>
     </section>
+
+    <CintaFotos />
 
     <section v-if="destacados.length && !categoriaSeleccionada" class="destacados" aria-labelledby="destacados-titulo">
       <div class="contenedor">
@@ -109,6 +131,7 @@ watch(categorias, (lista) => {
             :producto="producto"
             :categoria-nombre="nombreCategoria(producto)"
             :indice="i + 2"
+            v-revelar="i * 110"
             class="destacados__tarjeta"
           />
         </div>
@@ -142,6 +165,7 @@ watch(categorias, (lista) => {
           :producto="producto"
           :categoria-nombre="nombreCategoria(producto)"
           :indice="i"
+          v-revelar="(i % 4) * 90"
         />
       </div>
     </section>
@@ -157,7 +181,7 @@ watch(categorias, (lista) => {
     'texto foto';
   align-items: end;
   gap: 1.6rem 2.4rem;
-  padding-block: 3rem 2.5rem;
+  padding-block: 3.6rem 3rem;
 
   @include hasta($tableta) {
     grid-template-columns: 1fr;
@@ -170,42 +194,16 @@ watch(categorias, (lista) => {
 
   &__foto {
     grid-area: foto;
-    position: relative;
-    margin: 0;
-    align-self: stretch;
+    align-self: start;
     transform: rotate(1.5deg);
-
-    img {
-      @include borde;
-      display: block;
-      width: 100%;
-      height: 100%;
-      max-height: 34rem;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
-      border-radius: $radio;
-      box-shadow: $sombra-tag;
-    }
+    animation: flotar linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 600px;
 
     @include hasta($tableta) {
       transform: none;
-
-      img {
-        max-height: 26rem;
-      }
+      animation: none;
     }
-  }
-
-  &__pie {
-    @include etiqueta-texto(0.6rem);
-    position: absolute;
-    left: 0.9rem;
-    bottom: 0.9rem;
-    padding: 0.3rem 0.6rem;
-    background: var(--acento);
-    border: 1px solid var(--linea);
-    border-radius: $radio;
-    color: var(--sobre-acento);
   }
 
   &__titulo {
@@ -265,6 +263,12 @@ watch(categorias, (lista) => {
   }
 }
 
+@keyframes flotar {
+  to {
+    translate: 0 -2.5rem;
+  }
+}
+
 @keyframes adelgazar {
   from {
     font-variation-settings: 'wght' 900;
@@ -301,7 +305,7 @@ watch(categorias, (lista) => {
     display: flex;
     gap: 1.4rem;
     overflow-x: auto;
-    padding: 0.4rem 0.2rem 2rem;
+    padding: 0.8rem 0.9rem 2rem;
     scroll-snap-type: x mandatory;
     scrollbar-width: thin;
   }
