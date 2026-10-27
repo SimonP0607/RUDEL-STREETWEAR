@@ -17,6 +17,7 @@ const giro = computed(() => {
 })
 
 const imagenFallida = ref(false)
+const alternaFallida = ref(false)
 
 const agotado = computed(() => props.producto.tallas.every((t) => t.existencias <= 0))
 </script>
@@ -30,14 +31,27 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
       <span v-else-if="agotado" class="etiqueta__sello etiqueta__sello--agotado">Agotado</span>
 
       <div class="etiqueta__arte">
-        <img
-          v-if="producto.imagenUrl && !imagenFallida"
-          :src="producto.imagenUrl"
-          :alt="producto.nombre"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          @error="imagenFallida = true"
-        />
+        <template v-if="producto.imagenUrl && !imagenFallida">
+          <img
+            class="etiqueta__foto"
+            :src="producto.imagenUrl"
+            :alt="producto.nombre"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            @error="imagenFallida = true"
+          />
+          <img
+            v-if="producto.imagenAlternaUrl && !alternaFallida"
+            class="etiqueta__foto etiqueta__foto--alterna"
+            :src="producto.imagenAlternaUrl"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            @error="alternaFallida = true"
+          />
+        </template>
         <ArteProducto v-else :categoria-nombre="categoriaNombre" :color="producto.color" :nombre="producto.nombre" />
       </div>
 
@@ -132,15 +146,39 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
   }
 
   &__arte {
-    aspect-ratio: 1 / 1;
-    padding: 1.6rem 1.4rem 0.4rem;
-    border-bottom: 1px dashed var(--linea-suave);
+    position: relative;
+    aspect-ratio: 4 / 5;
+    margin: 1.6rem 1.1rem 0.4rem;
+    overflow: hidden;
+    border-radius: $radio;
+  }
 
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: $radio;
+  &__foto {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition:
+      opacity 0.35s ease,
+      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    &--alterna {
+      opacity: 0;
+    }
+
+    .etiqueta:hover &,
+    .etiqueta:focus-within & {
+      transform: scale(1.03);
+    }
+
+    .etiqueta:hover &--alterna,
+    .etiqueta:focus-within &--alterna {
+      opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
     }
   }
 

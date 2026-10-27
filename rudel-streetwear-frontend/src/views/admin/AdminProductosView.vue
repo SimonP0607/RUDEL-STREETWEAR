@@ -118,8 +118,14 @@ onMounted(cargar)
         <tbody>
           <tr v-for="producto in productos" :key="producto._id" :class="{ 'fila--inactiva': !producto.activo }">
             <td>
-              <p class="fila__nombre">{{ producto.nombre }}</p>
-              <p class="fila__detalle">{{ producto.color }}</p>
+              <div class="fila__producto">
+                <img v-if="producto.imagenUrl" class="fila__miniatura" :src="producto.imagenUrl" alt="" loading="lazy" />
+                <span v-else class="fila__miniatura fila__miniatura--vacia" aria-hidden="true" />
+                <div>
+                  <p class="fila__nombre">{{ producto.nombre }}</p>
+                  <p class="fila__detalle">{{ producto.color }}</p>
+                </div>
+              </div>
             </td>
             <td>{{ nombreCategoria(producto) }}</td>
             <td class="tabla__numero">{{ formatoPrecio(producto.precio) }}</td>
@@ -197,6 +203,25 @@ onMounted(cargar)
 }
 
 .fila {
+  &__producto {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  &__miniatura {
+    flex-shrink: 0;
+    width: 2.6rem;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border: 1px solid var(--linea-suave);
+    border-radius: $radio;
+
+    &--vacia {
+      background: var(--superficie-2);
+    }
+  }
+
   &__nombre {
     font-weight: 600;
   }

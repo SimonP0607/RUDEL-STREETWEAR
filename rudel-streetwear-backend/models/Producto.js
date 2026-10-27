@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 
 const TALLAS_VALIDAS = ['XS', 'S', 'M', 'L', 'XL', 'Única'];
+const RUTA_IMAGEN = /^(https?:\/\/\S+|\/(?!\/)[\w\-./]+)$/i;
+
+const campoImagen = {
+  type: String,
+  trim: true,
+  default: '',
+  validate: {
+    validator: (v) => v === '' || RUTA_IMAGEN.test(v),
+    message: 'La imagen debe ser una URL http(s) o una ruta del sitio que empiece por /',
+  },
+};
 
 const tallaSchema = new mongoose.Schema(
   {
@@ -42,15 +53,8 @@ const productoSchema = new mongoose.Schema(
       min: [0, 'El precio no puede ser negativo'],
     },
     color: { type: String, trim: true, default: '' },
-    imagenUrl: {
-      type: String,
-      trim: true,
-      default: '',
-      validate: {
-        validator: (v) => v === '' || /^https?:\/\/\S+$/i.test(v),
-        message: 'La URL de la imagen debe empezar por http:// o https://',
-      },
-    },
+    imagenUrl: campoImagen,
+    imagenAlternaUrl: campoImagen,
     categoria: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Categoria',

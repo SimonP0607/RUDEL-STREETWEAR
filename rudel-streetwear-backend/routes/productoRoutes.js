@@ -35,6 +35,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'El parámetro categoria no tiene un formato válido' }
  *   post:
  *     security:
  *       - cookieSesion: []

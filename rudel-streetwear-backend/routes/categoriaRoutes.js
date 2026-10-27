@@ -45,6 +45,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'Ya existe un registro con ese nombre' }
  */
 router.get('/', ctrl.listar);
 router.post('/', protegerEscritura, ctrl.crear);
@@ -91,6 +92,7 @@ router.post('/', protegerEscritura, ctrl.crear);
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'Ya existe un registro con ese nombre' }
  *   delete:
  *     security:
  *       - cookieSesion: []
@@ -108,6 +110,7 @@ router.post('/', protegerEscritura, ctrl.crear);
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'No se puede eliminar la categoría "Oversize" porque tiene 5 producto(s) asociado(s)' }
  */
 router.get('/:id', validarId, ctrl.obtener);
 router.put('/:id', protegerEscritura, validarId, ctrl.actualizar);

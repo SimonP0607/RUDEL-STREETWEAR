@@ -11,6 +11,13 @@ async function iniciarSesion(page: Page) {
   await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible()
 }
 
+async function elegirTalla(page: Page, talla: string) {
+  await page
+    .locator('label.tallas__opcion')
+    .filter({ has: page.locator('.tallas__nombre', { hasText: new RegExp(`^${talla}$`) }) })
+    .click()
+}
+
 async function marcarDocumento(page: Page) {
   await page.evaluate(() => Object.assign(window, { __sinRecarga: true }))
 }
@@ -23,27 +30,29 @@ test.describe('Catálogo público', () => {
   test('al elegir una categoría solo se muestran sus productos', async ({ page }) => {
     await page.goto('/')
     const filtro = page.getByRole('navigation', { name: 'Filtrar por categoría' })
-    await filtro.getByRole('button', { name: /Gorras/ }).click()
+    await filtro.getByRole('button', { name: /Acid Wash/ }).click()
     await expect(page).toHaveURL(/categoria=/)
-    await expect(page.getByRole('heading', { name: /Gorras/, level: 2 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Acid Wash/, level: 2 })).toBeVisible()
 
     const tarjetas = page.locator('.rejilla .etiqueta')
     await expect(tarjetas).toHaveCount(2)
     for (const texto of await tarjetas.locator('.etiqueta__categoria').allInnerTexts()) {
-      expect(texto).toMatch(/^Gorras/i)
+      expect(texto).toMatch(/^Acid Wash/i)
     }
 
     await filtro.getByRole('button', { name: /Todo/ }).click()
-    await expect(tarjetas).toHaveCount(11)
+    await expect(tarjetas).toHaveCount(9)
   })
 })
 
 test.describe('Carrito de compras', () => {
   test('agrega, modifica cantidades, quita y recalcula el total', async ({ page }) => {
     await page.goto('/')
-    await page.locator('.rejilla').getByRole('link', { name: /Snapback Rudel/ }).click()
-    await expect(page.getByRole('heading', { name: 'Snapback Rudel', level: 1 })).toBeVisible()
+    await page.locator('.rejilla').getByRole('link', { name: /Camiseta Hope/ }).click()
+    await expect(page.getByRole('heading', { name: 'Camiseta Hope', level: 1 })).toBeVisible()
+    await expect(page.locator('.ficha__miniatura')).toHaveCount(2)
 
+    await elegirTalla(page, 'M')
     await page.getByRole('button', { name: 'Aumentar cantidad' }).click()
     await page.getByRole('button', { name: 'Agregar al carrito' }).click()
 
@@ -59,17 +68,18 @@ test.describe('Carrito de compras', () => {
 
     await tiquete.getByRole('button', { name: 'Cerrar el carrito' }).click()
     await page.getByRole('link', { name: '← Catálogo' }).click()
-    await page.locator('.rejilla').getByRole('link', { name: /Bolso Crossbody/ }).click()
+    await page.locator('.rejilla').getByRole('link', { name: /Esqueleto Basic/ }).click()
+    await elegirTalla(page, 'S')
     await page.getByRole('button', { name: 'Agregar al carrito' }).click()
-    await expect(total).toContainText('279.700')
+    await expect(total).toContainText('229.700')
     await expect(page.locator('.cabecera__contador')).toHaveText('3')
 
-    await tiquete.locator('.item').filter({ hasText: 'Snapback Rudel' }).getByRole('button', { name: 'Quitar' }).click()
-    await expect(total).toContainText('99.900')
+    await tiquete.locator('.item').filter({ hasText: 'Camiseta Hope' }).getByRole('button', { name: 'Quitar' }).click()
+    await expect(total).toContainText('49.900')
 
     await page.reload()
     await page.getByRole('button', { name: /Carrito/ }).click()
-    await expect(page.getByRole('dialog', { name: 'Tiquete de compra' }).locator('.tiquete__total')).toContainText('99.900')
+    await expect(page.getByRole('dialog', { name: 'Tiquete de compra' }).locator('.tiquete__total')).toContainText('49.900')
   })
 })
 

@@ -81,9 +81,13 @@ watch(categorias, (lista) => {
         <span class="portada__linea portada__linea--acento">urbana</span>
         <span class="portada__linea">por talla</span>
       </h1>
+      <figure class="portada__foto">
+        <img src="/productos/portada-rudel.webp" alt="Modelos con las camisetas Acid Wash de RUDEL" width="800" height="1000" fetchpriority="high" />
+        <figcaption class="portada__pie">Drop Acid Wash · fotos reales de la marca</figcaption>
+      </figure>
       <div class="portada__texto">
         <p class="portada__descripcion">
-          Camisetas, hoodies, pantalones, gorras y accesorios de RUDEL. Cada etiqueta muestra el precio y las tallas
+          Camisetas oversize, acid wash, croptops y esqueletos de RUDEL. Cada etiqueta muestra el precio y las tallas
           que quedan; elige una prenda para ver el detalle y agregarla a tu carrito.
         </p>
         <p class="portada__dato">
@@ -147,18 +151,66 @@ watch(categorias, (lista) => {
 <style lang="scss" scoped>
 .portada {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.35fr minmax(15rem, 0.75fr);
+  grid-template-areas:
+    'titulo foto'
+    'texto foto';
   align-items: end;
-  gap: 2rem;
+  gap: 1.6rem 2.4rem;
   padding-block: 3rem 2.5rem;
 
   @include hasta($tableta) {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'titulo'
+      'foto'
+      'texto';
     padding-block: 2rem 1.8rem;
   }
 
+  &__foto {
+    grid-area: foto;
+    position: relative;
+    margin: 0;
+    align-self: stretch;
+    transform: rotate(1.5deg);
+
+    img {
+      @include borde;
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-height: 34rem;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      border-radius: $radio;
+      box-shadow: $sombra-tag;
+    }
+
+    @include hasta($tableta) {
+      transform: none;
+
+      img {
+        max-height: 26rem;
+      }
+    }
+  }
+
+  &__pie {
+    @include etiqueta-texto(0.6rem);
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.9rem;
+    padding: 0.3rem 0.6rem;
+    background: var(--acento);
+    border: 1px solid var(--linea);
+    border-radius: $radio;
+    color: var(--sobre-acento);
+  }
+
   &__titulo {
-    @include display(3.6rem, 11vw, 9.5rem, 900);
+    grid-area: titulo;
+    @include display(3.6rem, 9vw, 8.5rem, 900);
     display: flex;
     flex-direction: column;
   }
@@ -182,6 +234,7 @@ watch(categorias, (lista) => {
   }
 
   &__texto {
+    grid-area: texto;
     display: flex;
     flex-direction: column;
     gap: 1rem;

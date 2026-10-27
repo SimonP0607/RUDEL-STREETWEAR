@@ -15,7 +15,7 @@ const tipo = computed<Tipo>(() => {
   if (/hood|buzo|sudadera|saco/.test(n)) return 'hoodie'
   if (/pantal|jean|cargo|jogger|short/.test(n)) return 'pantalon'
   if (/gorr|cap|bucket|sombrero/.test(n)) return 'gorra'
-  if (/camis|tee|polo|playera/.test(n)) return 'camiseta'
+  if (/camis|tee|polo|playera|oversize|acid|crop|esquelet/.test(n)) return 'camiseta'
   return 'accesorio'
 })
 

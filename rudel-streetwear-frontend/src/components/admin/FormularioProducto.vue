@@ -4,6 +4,7 @@ import type { Categoria, Producto, ProductoEntrada } from '@/types'
 import { TALLAS_VALIDAS } from '@/types'
 import { productosApi } from '@/services/productos'
 import { colorACss } from '@/utils/formato'
+import { imagenValida } from '@/utils/imagen'
 
 const props = defineProps<{ producto: Producto | null; categorias: Categoria[] }>()
 const emit = defineEmits<{ guardado: [producto: Producto]; cancelar: [] }>()
@@ -19,6 +20,7 @@ const datos = reactive({
   precio: 0,
   color: '',
   imagenUrl: '',
+  imagenAlternaUrl: '',
   categoria: '',
   activo: true,
   destacado: false,
@@ -38,6 +40,7 @@ watch(
     datos.precio = producto?.precio ?? 0
     datos.color = producto?.color ?? ''
     datos.imagenUrl = producto?.imagenUrl ?? ''
+    datos.imagenAlternaUrl = producto?.imagenAlternaUrl ?? ''
     datos.categoria = producto?.categoria?._id ?? props.categorias[0]?._id ?? ''
     datos.activo = producto?.activo ?? true
     datos.destacado = producto?.destacado ?? false
@@ -63,10 +66,9 @@ function validar(): boolean {
     Number.isFinite(datos.precio) && datos.precio >= 0 ? undefined : 'El precio debe ser un número mayor o igual a cero.'
   errores.categoria = datos.categoria ? undefined : 'Elige una categoría.'
   errores.color = datos.color.trim() ? undefined : 'Indica el color de la prenda.'
-  errores.imagenUrl =
-    !datos.imagenUrl.trim() || /^https?:\/\/\S+$/i.test(datos.imagenUrl.trim())
-      ? undefined
-      : 'La URL debe empezar por http:// o https://'
+  const mensajeImagen = 'Usa una URL que empiece por https:// o una ruta del sitio como /productos/foto.webp'
+  errores.imagenUrl = imagenValida(datos.imagenUrl.trim()) ? undefined : mensajeImagen
+  errores.imagenAlternaUrl = imagenValida(datos.imagenAlternaUrl.trim()) ? undefined : mensajeImagen
 
   if (tallas.value.length === 0) {
     errores.tallas = 'Agrega al menos una talla.'
@@ -91,6 +93,7 @@ async function guardar() {
     precio: Number(datos.precio),
     color: datos.color.trim(),
     imagenUrl: datos.imagenUrl.trim(),
+    imagenAlternaUrl: datos.imagenAlternaUrl.trim(),
     categoria: datos.categoria,
     tallas: tallas.value.map((t) => ({ talla: t.talla, existencias: Number(t.existencias) })),
     activo: datos.activo,
@@ -145,10 +148,22 @@ async function guardar() {
       </div>
 
       <div class="campo">
-        <label for="prod-imagen" class="campo__etiqueta">URL de la imagen</label>
-        <input id="prod-imagen" v-model="datos.imagenUrl" type="url" class="campo__control" placeholder="https://…" />
+        <label for="prod-imagen" class="campo__etiqueta">Foto principal</label>
+        <input id="prod-imagen" v-model="datos.imagenUrl" type="text" inputmode="url" class="campo__control" placeholder="/productos/foto.webp o https://…" />
         <p v-if="errores.imagenUrl" class="formulario__error">{{ errores.imagenUrl }}</p>
         <p v-else class="campo__ayuda">Si se deja vacía, el catálogo muestra el dibujo técnico de la prenda.</p>
+      </div>
+    </div>
+
+    <div class="formulario__fila">
+      <div class="campo">
+        <label for="prod-imagen-alterna" class="campo__etiqueta">Segunda foto (espalda o detalle)</label>
+        <input id="prod-imagen-alterna" v-model="datos.imagenAlternaUrl" type="text" inputmode="url" class="campo__control" placeholder="Opcional" />
+        <p v-if="errores.imagenAlternaUrl" class="formulario__error">{{ errores.imagenAlternaUrl }}</p>
+        <p v-else class="campo__ayuda">Se muestra al pasar el cursor sobre la tarjeta y en el detalle.</p>
+      </div>
+      <div class="formulario__vista" aria-hidden="true">
+        <img v-for="url in [datos.imagenUrl, datos.imagenAlternaUrl].filter((u) => u.trim() && imagenValida(u.trim()))" :key="url" :src="url.trim()" alt="" />
       </div>
     </div>
 
@@ -231,6 +246,20 @@ async function guardar() {
     height: 1.4rem;
     border: 1px solid var(--linea);
     border-radius: 50%;
+  }
+
+  &__vista {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+
+    img {
+      width: 4rem;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      border: 1px solid var(--linea-suave);
+      border-radius: $radio;
+    }
   }
 
   &__error {

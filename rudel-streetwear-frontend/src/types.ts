@@ -23,6 +23,7 @@ export interface Producto {
   precio: number
   color: string
   imagenUrl: string
+  imagenAlternaUrl: string
   categoria: CategoriaResumen | null
   tallas: Talla[]
   activo: boolean

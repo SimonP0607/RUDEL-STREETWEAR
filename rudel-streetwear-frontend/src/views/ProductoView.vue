@@ -5,6 +5,7 @@ import type { Producto } from '@/types'
 import { productosApi } from '@/services/productos'
 import { useCarrito } from '@/composables/useCarrito'
 import { colorACss, formatoPrecio } from '@/utils/formato'
+import { imagenesDe } from '@/utils/imagen'
 import ArteProducto from '@/components/ArteProducto.vue'
 import SelectorTalla from '@/components/SelectorTalla.vue'
 
@@ -14,6 +15,9 @@ const carrito = useCarrito()
 const producto = ref<Producto | null>(null)
 const categoria = computed(() => producto.value?.categoria ?? null)
 const imagenFallida = ref(false)
+const vista = ref(0)
+const imagenes = computed(() => (producto.value ? imagenesDe(producto.value) : []))
+const imagenActual = computed(() => imagenes.value[vista.value] ?? imagenes.value[0] ?? '')
 const cargando = ref(true)
 const error = ref('')
 
@@ -32,6 +36,7 @@ async function cargar(id: string) {
   error.value = ''
   producto.value = null
   imagenFallida.value = false
+  vista.value = 0
   tallaElegida.value = null
   cantidad.value = 1
   try {
@@ -89,13 +94,30 @@ watch(() => ruta.params.id, (id) => id && cargar(String(id)))
         <span class="ficha__esquina ficha__esquina--b" aria-hidden="true" />
         <span class="ficha__esquina ficha__esquina--c" aria-hidden="true" />
         <span class="ficha__esquina ficha__esquina--d" aria-hidden="true" />
-        <img
-          v-if="producto.imagenUrl && !imagenFallida"
-          :src="producto.imagenUrl"
-          :alt="producto.nombre"
-          referrerpolicy="no-referrer"
-          @error="imagenFallida = true"
-        />
+        <template v-if="imagenActual && !imagenFallida">
+          <img
+            :key="imagenActual"
+            class="ficha__foto"
+            :src="imagenActual"
+            :alt="vista === 0 ? producto.nombre : `${producto.nombre}, segunda vista`"
+            referrerpolicy="no-referrer"
+            @error="imagenFallida = true"
+          />
+          <div v-if="imagenes.length > 1" class="ficha__miniaturas" role="group" aria-label="Fotos de la prenda">
+            <button
+              v-for="(url, i) in imagenes"
+              :key="url"
+              type="button"
+              class="ficha__miniatura"
+              :class="{ 'ficha__miniatura--activa': vista === i }"
+              :aria-pressed="vista === i"
+              :aria-label="`Ver foto ${i + 1} de ${imagenes.length}`"
+              @click="vista = i"
+            >
+              <img :src="url" alt="" referrerpolicy="no-referrer" />
+            </button>
+          </div>
+        </template>
         <ArteProducto v-else :categoria-nombre="categoria?.nombre ?? ''" :color="producto.color" :nombre="producto.nombre" />
         <p class="ficha__codigo">Ref. {{ (producto._id.length > 12 ? producto._id.slice(-8) : producto._id).toUpperCase() }}</p>
       </div>
@@ -190,10 +212,48 @@ watch(() => ruta.params.id, (id) => id && cargar(String(id)))
     background: var(--superficie);
     box-shadow: $sombra-tag;
 
+  }
+
+  &__foto {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    animation: aparecer 0.3s ease;
+  }
+
+  &__miniaturas {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+  }
+
+  &__miniatura {
+    width: 4.2rem;
+    aspect-ratio: 4 / 5;
+    padding: 0;
+    overflow: hidden;
+    border: $borde solid var(--linea-suave);
+    border-radius: $radio;
+    opacity: 0.6;
+    transition:
+      opacity $transicion,
+      border-color $transicion;
+
     img {
       width: 100%;
-      aspect-ratio: 1 / 1;
+      height: 100%;
       object-fit: cover;
+    }
+
+    &:hover,
+    &--activa {
+      opacity: 1;
+      border-color: var(--linea);
+    }
+
+    &--activa {
+      box-shadow: 0 0 0 2px var(--acento);
     }
   }
 
@@ -365,6 +425,16 @@ watch(() => ruta.params.id, (id) => id && cargar(String(id)))
   &__agregar {
     min-height: 3.6rem;
     font-size: 0.9rem;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0.4;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 </style>

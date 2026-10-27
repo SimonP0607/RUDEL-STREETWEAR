@@ -4,7 +4,7 @@ const Categoria = require('../models/Categoria');
 const { HttpError } = require('../middlewares/manejadorErrores');
 
 const CAMPOS_EDITABLES = [
-  'nombre', 'descripcion', 'precio', 'color', 'imagenUrl',
+  'nombre', 'descripcion', 'precio', 'color', 'imagenUrl', 'imagenAlternaUrl',
   'categoria', 'tallas', 'activo', 'destacado',
 ];
 

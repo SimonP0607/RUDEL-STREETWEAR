@@ -87,16 +87,16 @@ const opciones = {
           type: 'object',
           required: ['nombre'],
           properties: {
-            nombre: { type: 'string', example: 'Hoodies' },
-            descripcion: { type: 'string', example: 'Buzos con capucha oversize' },
+            nombre: { type: 'string', example: 'Oversize' },
+            descripcion: { type: 'string', example: 'Camisetas de corte amplio con estampado propio' },
           },
         },
         Categoria: {
           type: 'object',
           properties: {
             _id: { type: 'string', example: '66f1c2a4b5e6d7f8a9b0c1d2' },
-            nombre: { type: 'string', example: 'Hoodies' },
-            descripcion: { type: 'string', example: 'Buzos con capucha oversize' },
+            nombre: { type: 'string', example: 'Oversize' },
+            descripcion: { type: 'string', example: 'Camisetas de corte amplio con estampado propio' },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
           },
@@ -125,11 +125,12 @@ const opciones = {
           type: 'object',
           required: ['nombre', 'precio', 'categoria', 'tallas'],
           properties: {
-            nombre: { type: 'string', example: 'Hoodie Rudel Classic' },
-            descripcion: { type: 'string', example: 'Hoodie oversize en algodón perchado' },
-            precio: { type: 'number', minimum: 0, example: 159900 },
+            nombre: { type: 'string', example: 'Camiseta Hope' },
+            descripcion: { type: 'string', example: 'Camiseta oversize negra con estampado Hope en la espalda' },
+            precio: { type: 'number', minimum: 0, example: 89900 },
             color: { type: 'string', example: 'Negro' },
-            imagenUrl: { type: 'string', example: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800' },
+            imagenUrl: { type: 'string', description: 'URL http(s) o ruta del sitio que empieza por /', example: '/productos/hope-frente.webp' },
+            imagenAlternaUrl: { type: 'string', description: 'Segunda foto (espalda o detalle), opcional', example: '/productos/hope-espalda.webp' },
             categoria: { type: 'string', description: 'Id de la categoría', example: '66f1c2a4b5e6d7f8a9b0c1d2' },
             tallas: {
               type: 'array',
@@ -144,16 +145,17 @@ const opciones = {
           type: 'object',
           properties: {
             _id: { type: 'string', example: '66f1c3b7c8d9e0f1a2b3c4d5' },
-            nombre: { type: 'string', example: 'Hoodie Rudel Classic' },
+            nombre: { type: 'string', example: 'Camiseta Hope' },
             descripcion: { type: 'string' },
-            precio: { type: 'number', example: 159900 },
+            precio: { type: 'number', example: 89900 },
             color: { type: 'string', example: 'Negro' },
-            imagenUrl: { type: 'string' },
+            imagenUrl: { type: 'string', example: '/productos/hope-frente.webp' },
+            imagenAlternaUrl: { type: 'string', example: '/productos/hope-espalda.webp' },
             categoria: {
               type: 'object',
               properties: {
                 _id: { type: 'string' },
-                nombre: { type: 'string', example: 'Hoodies' },
+                nombre: { type: 'string', example: 'Oversize' },
               },
             },
             tallas: { type: 'array', items: { $ref: '#/components/schemas/Talla' } },
@@ -167,23 +169,23 @@ const opciones = {
       responses: {
         DatosNoValidos: {
           description: 'Datos no válidos (campos obligatorios, valores negativos, categoría inexistente, etc.)',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { error: 'Datos no válidos', detalles: ['El precio no puede ser negativo'] } } },
         },
         IdNoValido: {
           description: 'El id no tiene un formato válido',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { error: 'El id no tiene un formato válido' } } },
         },
         NoAutenticado: {
           description: 'No hay una sesión de administrador activa',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { error: 'Debes iniciar sesión como administrador' } } },
         },
         CsrfNoValido: {
           description: 'Token CSRF ausente o no válido, u origen de la petición no permitido',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { error: 'Token CSRF ausente o no válido' } } },
         },
         NoEncontrado: {
           description: 'No existe un documento con ese id',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { error: 'Producto no encontrado' } } },
         },
       },
     },

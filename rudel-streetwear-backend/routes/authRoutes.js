@@ -35,16 +35,19 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'Usuario y contraseña son obligatorios' }
  *       401:
  *         description: Usuario o contraseña incorrectos
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'Usuario o contraseña incorrectos' }
  *       429:
  *         description: Demasiados intentos fallidos
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
+ *             example: { error: 'Demasiados intentos de inicio de sesión, espera 15 minutos' }
  */
 router.post('/login', limiteLogin, ctrl.iniciarSesion);
 

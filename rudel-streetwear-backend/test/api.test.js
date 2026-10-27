@@ -46,11 +46,12 @@ describe('Catálogo público', () => {
 
   test('el filtro por categoría devuelve solo productos de esa categoría', async () => {
     const categorias = await request(app).get('/api/categorias');
-    const hoodies = categorias.body.find((categoria) => categoria.nombre === 'Hoodies');
-    const respuesta = await request(app).get(`/api/productos?categoria=${hoodies._id}`);
+    const acidWash = categorias.body.find((categoria) => categoria.nombre === 'Acid Wash');
+    const respuesta = await request(app).get(`/api/productos?categoria=${acidWash._id}`);
     assert.equal(respuesta.status, 200);
-    assert.equal(respuesta.body.length, hoodies.productosActivos);
-    assert.ok(respuesta.body.every((producto) => producto.categoria._id === hoodies._id));
+    assert.equal(respuesta.body.length, 2);
+    assert.equal(respuesta.body.length, acidWash.productosActivos);
+    assert.ok(respuesta.body.every((producto) => producto.categoria._id === acidWash._id));
   });
 
   test('rechaza un id de categoría mal formado', async () => {
@@ -165,6 +166,22 @@ describe('Mitigación de XSS', () => {
         tallas: [{ talla: 'M', existencias: 1 }],
       });
     assert.equal(respuesta.status, 400);
+  });
+
+  test('acepta rutas de imagen del propio sitio y rechaza rutas de otro dominio', async () => {
+    const { agente, csrf } = await iniciarSesion();
+    const categorias = await request(app).get('/api/categorias');
+    const base = { precio: 1000, categoria: categorias.body[0]._id, tallas: [{ talla: 'M', existencias: 1 }] };
+    const enviar = (cuerpo) => agente.post('/api/productos').set('Origin', ORIGEN).set('X-CSRF-Token', csrf).send({ ...base, ...cuerpo });
+
+    const local = await enviar({ nombre: 'Foto local', imagenUrl: '/productos/hope-frente.webp', imagenAlternaUrl: '/productos/hope-espalda.webp' });
+    assert.equal(local.status, 201);
+    assert.equal(local.body.imagenAlternaUrl, '/productos/hope-espalda.webp');
+
+    const otroDominio = await enviar({ nombre: 'Foto externa', imagenUrl: '//sitio-malicioso.example/x.png' });
+    assert.equal(otroDominio.status, 400);
+
+    await agente.delete(`/api/productos/${local.body._id}`).set('Origin', ORIGEN).set('X-CSRF-Token', csrf);
   });
 
   test('envía cabeceras de seguridad', async () => {
