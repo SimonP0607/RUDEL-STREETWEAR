@@ -2,15 +2,28 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 const METODOS_SEGUROS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
 let tokenCsrf: string | null = null
+let tokenCsrfCliente: string | null = null
 let alExpirarSesion: (() => void) | null = null
+let alExpirarSesionCliente: (() => void) | null = null
 
 export function guardarTokenCsrf(token: string | null) {
   tokenCsrf = token
 }
 
+export function guardarTokenCsrfCliente(token: string | null) {
+  tokenCsrfCliente = token
+}
+
 export function registrarExpiracionSesion(manejador: () => void) {
   alExpirarSesion = manejador
 }
+
+export function registrarExpiracionSesionCliente(manejador: () => void) {
+  alExpirarSesionCliente = manejador
+}
+
+const esRutaCliente = (ruta: string) => ruta.startsWith('/clientes/')
+const esAccesoCliente = (ruta: string) => /^\/clientes\/(registro|login|logout|sesion)$/.test(ruta)
 
 export class ErrorHttp extends Error {
   estado: number
@@ -27,7 +40,8 @@ export async function peticion<T>(ruta: string, opciones: RequestInit = {}): Pro
   const metodo = (opciones.method ?? 'GET').toUpperCase()
   const encabezados = new Headers(opciones.headers)
   if (opciones.body !== undefined) encabezados.set('Content-Type', 'application/json')
-  if (!METODOS_SEGUROS.has(metodo) && tokenCsrf) encabezados.set('X-CSRF-Token', tokenCsrf)
+  const token = esRutaCliente(ruta) ? tokenCsrfCliente : tokenCsrf
+  if (!METODOS_SEGUROS.has(metodo) && token) encabezados.set('X-CSRF-Token', token)
 
   let respuesta: Response
   try {
@@ -40,7 +54,13 @@ export async function peticion<T>(ruta: string, opciones: RequestInit = {}): Pro
 
   const datos = await respuesta.json().catch(() => null)
   if (!respuesta.ok) {
-    if (respuesta.status === 401 && !ruta.startsWith('/auth/')) alExpirarSesion?.()
+    if (respuesta.status === 401) {
+      if (esRutaCliente(ruta)) {
+        if (!esAccesoCliente(ruta)) alExpirarSesionCliente?.()
+      } else if (!ruta.startsWith('/auth/')) {
+        alExpirarSesion?.()
+      }
+    }
     const mensaje = typeof datos?.error === 'string' ? datos.error : `Error ${respuesta.status}`
     const detalles = Array.isArray(datos?.detalles) ? datos.detalles.filter((d: unknown) => typeof d === 'string') : []
     throw new ErrorHttp(respuesta.status, mensaje, detalles)

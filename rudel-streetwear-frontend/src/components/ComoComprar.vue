@@ -2,8 +2,8 @@
 import { vRevelar } from '@/directives/revelar'
 
 const pasos = [
-  { n: '01', titulo: 'Elige tu prenda', texto: 'Filtra por categoría y abre la que te guste para ver sus fotos y su precio.' },
-  { n: '02', titulo: 'Escoge tu talla', texto: 'Cada talla muestra cuántas quedan. Si una está agotada, elige otra.' },
+  { n: '01', titulo: 'Crea tu cuenta', texto: 'Regístrate con tu correo para guardar tu carrito y marcar tus prendas favoritas.' },
+  { n: '02', titulo: 'Elige prenda y talla', texto: 'Filtra por categoría, abre la que te guste y mira cuántas quedan de cada talla.' },
   { n: '03', titulo: 'Arma tu carrito', texto: 'Cambia cantidades o quita prendas y mira el total al instante en tu tiquete.' },
 ]
 
@@ -15,7 +15,7 @@ const tallas = ['XS', 'S', 'M', 'L', 'XL', 'Única']
     <div class="contenedor">
       <header class="compra__cabecera">
         <h2 id="compra-titulo" class="compra__titulo">Cómo comprar</h2>
-        <p class="compra__nota">Sin registro, desde cualquier dispositivo</p>
+        <p class="compra__nota">Desde cualquier dispositivo</p>
       </header>
 
       <ol class="compra__pasos">

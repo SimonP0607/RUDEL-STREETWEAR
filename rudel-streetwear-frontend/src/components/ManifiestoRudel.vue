@@ -16,7 +16,7 @@ const mensajes = ['Hope', 'God Made', 'You Can Do It', 'Freedom', 'Paradise']
         </h2>
         <p class="manifiesto__parrafo">
           RUDEL es ropa urbana pensada para llevar una idea puesta: oversize, acid wash, croptops y esqueletos que
-          se eligen por talla, de XS a XL, y se arman en un carrito sin crear cuenta.
+          se eligen por talla, de XS a XL, y se guardan en tu carrito y tus favoritos con tu cuenta.
         </p>
 
         <ul class="manifiesto__mensajes" aria-label="Estampados con mensaje">

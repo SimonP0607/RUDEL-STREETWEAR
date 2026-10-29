@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import type { Producto } from '@/types'
 import { formatoPrecio } from '@/utils/formato'
 import ArteProducto from '@/components/ArteProducto.vue'
+import BotonFavorito from '@/components/BotonFavorito.vue'
 
 const props = defineProps<{
   producto: Producto
@@ -25,6 +26,7 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
 <template>
   <article class="etiqueta" :style="{ '--giro': giro }">
     <span class="etiqueta__cordon" aria-hidden="true" />
+    <BotonFavorito class="etiqueta__favorito" :producto-id="producto._id" :nombre="producto.nombre" />
     <RouterLink :to="{ name: 'producto', params: { id: producto._id } }" class="etiqueta__cuerpo">
       <span class="etiqueta__ojal" aria-hidden="true" />
       <span v-if="producto.destacado" class="etiqueta__sello">Destacado</span>
@@ -89,6 +91,13 @@ const agotado = computed(() => props.producto.tallas.every((t) => t.existencias 
     transform: rotate(0deg) translateY(-6px);
     z-index: 2;
     animation: columpio 0.9s ease-out;
+  }
+
+  &__favorito {
+    position: absolute;
+    top: 2.3rem;
+    left: 0.6rem;
+    z-index: 3;
   }
 
   &__cordon {

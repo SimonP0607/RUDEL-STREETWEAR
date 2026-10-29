@@ -6,6 +6,7 @@ const swaggerUi = require('swagger-ui-express');
 const config = require('./config/entorno');
 const swaggerSpec = require('./docs/swagger');
 const authRoutes = require('./routes/authRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
 const productoRoutes = require('./routes/productoRoutes');
 const { forzarHttps, cabecerasSeguridad, verificarOrigen, sanitizarEntrada } = require('./middlewares/seguridad');
@@ -38,6 +39,7 @@ app.get('/api', (req, res) => {
 
 app.use('/api', limiteGeneral);
 app.use('/api/auth', authRoutes);
+app.use('/api/clientes', clienteRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/productos', productoRoutes);
 

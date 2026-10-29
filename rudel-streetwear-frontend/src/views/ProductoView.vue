@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import type { Producto } from '@/types'
 import { productosApi } from '@/services/productos'
 import { useCarrito } from '@/composables/useCarrito'
+import { useCliente } from '@/composables/useCliente'
 import { colorACss, formatoPrecio } from '@/utils/formato'
 import { imagenesDe } from '@/utils/imagen'
 import ArteProducto from '@/components/ArteProducto.vue'
 import SelectorTalla from '@/components/SelectorTalla.vue'
+import BotonFavorito from '@/components/BotonFavorito.vue'
 
 const ruta = useRoute()
+const router = useRouter()
 const carrito = useCarrito()
+const cliente = useCliente()
 
 const producto = ref<Producto | null>(null)
 const categoria = computed(() => producto.value?.categoria ?? null)
@@ -51,7 +55,11 @@ async function cargar(id: string) {
   }
 }
 
-function agregarAlCarrito() {
+async function agregarAlCarrito() {
+  if (!(await cliente.verificar())) {
+    router.push({ name: 'cuenta', query: { volver: ruta.fullPath, motivo: 'carrito' } })
+    return
+  }
   if (!producto.value || !tallaElegida.value) {
     aviso.value = 'Elige una talla para agregar la prenda.'
     return
@@ -124,7 +132,10 @@ watch(() => ruta.params.id, (id) => id && cargar(String(id)))
 
       <div class="ficha__marbete">
         <p class="ficha__categoria">{{ categoria?.nombre ?? 'Sin categoría' }}</p>
-        <h1 class="ficha__nombre">{{ producto.nombre }}</h1>
+        <div class="ficha__titulo">
+          <h1 class="ficha__nombre">{{ producto.nombre }}</h1>
+          <BotonFavorito :producto-id="producto._id" :nombre="producto.nombre" />
+        </div>
         <p class="ficha__precio">{{ formatoPrecio(producto.precio) }}</p>
 
         <dl class="ficha__datos">
@@ -305,6 +316,13 @@ watch(() => ruta.params.id, (id) => id && cargar(String(id)))
   &__categoria {
     @include etiqueta-texto(0.7rem);
     color: var(--texto-suave);
+  }
+
+  &__titulo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
   }
 
   &__nombre {

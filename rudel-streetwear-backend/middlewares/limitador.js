@@ -19,4 +19,21 @@ const limiteLogin = rateLimit({
   message: respuesta('Demasiados intentos de inicio de sesión, espera 15 minutos'),
 });
 
-module.exports = { limiteGeneral, limiteLogin };
+const limiteLoginCliente = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: respuesta('Demasiados intentos de inicio de sesión, espera 15 minutos'),
+});
+
+const limiteRegistro = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: respuesta('Demasiadas cuentas creadas desde esta conexión, intenta más tarde'),
+});
+
+module.exports = { limiteGeneral, limiteLogin, limiteLoginCliente, limiteRegistro };

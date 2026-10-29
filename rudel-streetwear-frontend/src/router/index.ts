@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useSesion } from '@/composables/useSesion'
-import { registrarExpiracionSesion } from '@/services/http'
+import { useCliente } from '@/composables/useCliente'
+import { registrarExpiracionSesion, registrarExpiracionSesionCliente } from '@/services/http'
 import CatalogoView from '@/views/CatalogoView.vue'
 
 const router = createRouter({
@@ -14,6 +15,17 @@ const router = createRouter({
       path: '/producto/:id',
       name: 'producto',
       component: () => import('@/views/ProductoView.vue'),
+    },
+    {
+      path: '/cuenta',
+      name: 'cuenta',
+      component: () => import('@/views/CuentaView.vue'),
+    },
+    {
+      path: '/favoritos',
+      name: 'favoritos',
+      component: () => import('@/views/FavoritosView.vue'),
+      meta: { requiereCliente: true },
     },
     {
       path: '/admin/login',
@@ -49,6 +61,14 @@ router.beforeEach(async (to) => {
     const activa = await useSesion().verificar()
     return activa ? { name: 'admin-productos' } : true
   }
+  if (to.name === 'cuenta') {
+    const activa = await useCliente().verificar()
+    return activa ? { path: '/' } : true
+  }
+  if (to.meta.requiereCliente) {
+    const activa = await useCliente().verificar()
+    return activa ? true : { name: 'cuenta', query: { volver: to.fullPath } }
+  }
   if (!to.meta.requiereAdmin) return true
   const activa = await useSesion().verificar()
   return activa ? true : { name: 'login', query: { volver: to.fullPath } }
@@ -58,6 +78,12 @@ registrarExpiracionSesion(() => {
   useSesion().expirar()
   const actual = router.currentRoute.value
   if (actual.meta.requiereAdmin) router.replace({ name: 'login', query: { volver: actual.fullPath, expirada: '1' } })
+})
+
+registrarExpiracionSesionCliente(() => {
+  useCliente().expirar()
+  const actual = router.currentRoute.value
+  if (actual.meta.requiereCliente) router.replace({ name: 'cuenta', query: { volver: actual.fullPath, expirada: '1' } })
 })
 
 export default router

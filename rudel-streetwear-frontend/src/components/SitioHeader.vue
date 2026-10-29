@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCarrito } from '@/composables/useCarrito'
+import { useCliente } from '@/composables/useCliente'
 
 const carrito = useCarrito()
+const cliente = useCliente()
+const router = useRouter()
+const ruta = useRoute()
+
+async function abrirCarrito() {
+  if (await cliente.verificar()) carrito.abrir()
+  else router.push({ name: 'cuenta', query: { volver: ruta.fullPath, motivo: 'carrito' } })
+}
+
+async function salir() {
+  await cliente.cerrarSesion()
+  if (ruta.meta.requiereCliente) router.replace('/')
+}
 </script>
 
 <template>
@@ -15,13 +29,21 @@ const carrito = useCarrito()
 
       <nav class="cabecera__nav" aria-label="Navegación principal">
         <RouterLink to="/" class="cabecera__enlace">Catálogo</RouterLink>
+        <template v-if="cliente.haySesion.value">
+          <RouterLink to="/favoritos" class="cabecera__enlace">
+            Favoritos<span class="cabecera__cuenta-num">{{ cliente.totalFavoritos.value }}</span>
+          </RouterLink>
+          <span class="cabecera__usuario" :title="cliente.cliente.value?.correo">{{ cliente.cliente.value?.nombre.split(' ')[0] }}</span>
+          <button type="button" class="cabecera__enlace cabecera__salir" @click="salir">Salir</button>
+        </template>
+        <RouterLink v-else to="/cuenta" class="cabecera__enlace">Ingresar</RouterLink>
         <button
           type="button"
           class="cabecera__carrito"
           :class="{ 'cabecera__carrito--lleno': carrito.cantidadTotal.value > 0 }"
           aria-haspopup="dialog"
           :aria-expanded="carrito.abierto.value"
-          @click="carrito.abrir()"
+          @click="abrirCarrito"
         >
           <span>Carrito</span>
           <span class="cabecera__contador" aria-live="polite">{{ carrito.cantidadTotal.value }}</span>
@@ -80,6 +102,10 @@ const carrito = useCarrito()
     display: flex;
     align-items: center;
     gap: 1.25rem;
+
+    @include hasta($movil) {
+      gap: 0.8rem;
+    }
   }
 
   &__enlace {
@@ -91,6 +117,33 @@ const carrito = useCarrito()
     &.router-link-exact-active {
       border-color: var(--texto);
     }
+  }
+
+  &__cuenta-num {
+    margin-left: 0.4rem;
+    font-family: $fuente-mono;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  &__usuario {
+    @include etiqueta-texto(0.72rem);
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--texto-suave);
+
+    @include hasta($movil) {
+      display: none;
+    }
+  }
+
+  &__salir {
+    background: none;
+    border-top: 0;
+    border-inline: 0;
+    color: inherit;
   }
 
   &__carrito {

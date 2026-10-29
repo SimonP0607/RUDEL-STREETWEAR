@@ -1,45 +1,79 @@
 import { computed, ref, watch } from 'vue'
 import type { ItemCarrito, Producto } from '@/types'
+import { clientesApi } from '@/services/clientes'
 
-const CLAVE = 'rudel-carrito'
+const items = ref<ItemCarrito[]>([])
+const abierto = ref(false)
+const sincronizando = ref(false)
+let activo = false
+let temporizador: number | undefined
 
-function esItemValido(item: unknown): item is ItemCarrito {
-  const i = item as ItemCarrito
-  return (
-    typeof i?.productoId === 'string' &&
-    typeof i.nombre === 'string' &&
-    typeof i.talla === 'string' &&
-    Number.isFinite(i.precioUnitario) &&
-    Number.isInteger(i.cantidad) &&
-    i.cantidad > 0 &&
-    Number.isInteger(i.existenciasDisponibles)
-  )
+let ignorar = 0
+
+function reemplazar(lista: ItemCarrito[]) {
+  ignorar++
+  items.value = lista
 }
 
-function cargar(): ItemCarrito[] {
+async function guardarEnServidor() {
+  if (!activo) return
   try {
-    const guardado = localStorage.getItem(CLAVE)
-    const datos: unknown = guardado ? JSON.parse(guardado) : []
-    return Array.isArray(datos) ? datos.filter(esItemValido) : []
+    const guardado = await clientesApi.guardarCarrito(
+      items.value.map((i) => ({ productoId: i.productoId, talla: i.talla, cantidad: i.cantidad })),
+    )
+    const distinto =
+      guardado.length !== items.value.length ||
+      guardado.some((g, n) => g.cantidad !== items.value[n]?.cantidad || g.existenciasDisponibles !== items.value[n]?.existenciasDisponibles)
+    if (distinto && temporizador === undefined) reemplazar(guardado)
   } catch {
-    return []
+    return
   }
 }
 
-const items = ref<ItemCarrito[]>(cargar())
-const abierto = ref(false)
-
 watch(
   items,
-  (valor) => {
-    try {
-      localStorage.setItem(CLAVE, JSON.stringify(valor))
-    } catch {
+  () => {
+    if (ignorar > 0) {
+      ignorar--
       return
     }
+    if (!activo) return
+    window.clearTimeout(temporizador)
+    temporizador = window.setTimeout(async () => {
+      temporizador = undefined
+      sincronizando.value = true
+      await guardarEnServidor()
+      sincronizando.value = false
+    }, 200)
   },
   { deep: true },
 )
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    if (temporizador === undefined) return
+    window.clearTimeout(temporizador)
+    temporizador = undefined
+    void guardarEnServidor()
+  })
+}
+
+export async function cargarCarritoDelCliente() {
+  try {
+    reemplazar(await clientesApi.carrito())
+  } catch {
+    reemplazar([])
+  }
+  activo = true
+}
+
+export function descartarCarritoLocal() {
+  activo = false
+  window.clearTimeout(temporizador)
+  temporizador = undefined
+  items.value = []
+  abierto.value = false
+}
 
 export function useCarrito() {
   const cantidadTotal = computed(() => items.value.reduce((suma, item) => suma + item.cantidad, 0))

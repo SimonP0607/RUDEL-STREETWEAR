@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import SitioHeader from '@/components/SitioHeader.vue'
 import SitioFooter from '@/components/SitioFooter.vue'
 import CintaMarquee from '@/components/CintaMarquee.vue'
 import CarritoTiquete from '@/components/CarritoTiquete.vue'
+import { useCliente } from '@/composables/useCliente'
 
 const ruta = useRoute()
 
 const esZonaAdmin = computed(() => ruta.meta.zona === 'admin')
+
+onMounted(() => {
+  if (!esZonaAdmin.value) void useCliente().verificar()
+})
 </script>
 
 <template>

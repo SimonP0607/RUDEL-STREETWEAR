@@ -40,6 +40,17 @@ export interface Administrador {
   usuario: string
 }
 
+export interface Cliente {
+  _id: string
+  nombre: string
+  correo: string
+}
+
+export interface SesionCliente {
+  cliente: Cliente
+  csrfToken: string
+}
+
 export interface Sesion {
   administrador: Administrador
   csrfToken: string

@@ -11,6 +11,18 @@ async function iniciarSesion(page: Page) {
   await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible()
 }
 
+async function crearCuenta(page: Page, nombre = 'Laura Gómez') {
+  const correo = `cliente${Date.now()}${Math.floor(Math.random() * 1000)}@correo.com`
+  await page.goto('/cuenta')
+  await page.getByRole('tab', { name: 'Crear cuenta' }).click()
+  await page.getByLabel('Nombre').fill(nombre)
+  await page.getByLabel('Correo').fill(correo)
+  await page.getByLabel('Contraseña').fill('ClaveCliente2026')
+  await page.getByRole('button', { name: 'Crear cuenta' }).last().click()
+  await expect(page.locator('.cabecera__usuario')).toContainText(nombre.split(' ')[0] ?? nombre)
+  return correo
+}
+
 async function elegirTalla(page: Page, talla: string) {
   await page
     .locator('label.tallas__opcion')
@@ -45,8 +57,49 @@ test.describe('Catálogo público', () => {
   })
 })
 
+test.describe('Cuenta del cliente', () => {
+  test('sin sesión, agregar al carrito o a favoritos lleva a la cuenta', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.rejilla').getByRole('link', { name: /Camiseta Hope/ }).click()
+    await elegirTalla(page, 'M')
+    await page.getByRole('button', { name: 'Agregar al carrito' }).click()
+    await expect(page).toHaveURL(/\/cuenta\?.*motivo=carrito/)
+
+    await page.goto('/favoritos')
+    await expect(page).toHaveURL(/\/cuenta\?.*volver=(%2F|\/)favoritos/)
+  })
+
+  test('crea una cuenta, guarda favoritos y los conserva al volver a ingresar', async ({ page }) => {
+    const correo = await crearCuenta(page, 'Marta Ríos')
+    await page.goto('/')
+    await page.locator('.rejilla .etiqueta').filter({ hasText: 'Camiseta Hope' }).getByRole('button', { name: /favoritos/ }).click()
+    await expect(page.locator('.cabecera__enlace', { hasText: 'Favoritos' })).toContainText('1')
+
+    await page.getByRole('button', { name: 'Salir' }).click()
+    await expect(page.getByRole('link', { name: 'Ingresar' })).toBeVisible()
+
+    await page.goto('/cuenta')
+    await page.getByLabel('Correo').fill(correo)
+    await page.getByLabel('Contraseña').fill('ClaveCliente2026')
+    await page.getByRole('button', { name: 'Ingresar' }).last().click()
+    await page.getByRole('link', { name: /Favoritos/ }).click()
+    await expect(page.getByRole('heading', { name: 'Mis favoritos', level: 1 })).toBeVisible()
+    await expect(page.locator('.etiqueta')).toHaveCount(1)
+    await expect(page.locator('.etiqueta')).toContainText('Camiseta Hope')
+  })
+
+  test('rechaza una contraseña incorrecta', async ({ page }) => {
+    await page.goto('/cuenta')
+    await page.getByLabel('Correo').fill('nadie@correo.com')
+    await page.getByLabel('Contraseña').fill('ClaveIncorrecta1')
+    await page.getByRole('button', { name: 'Ingresar' }).last().click()
+    await expect(page.getByRole('alert')).toContainText('Correo o contraseña incorrectos')
+  })
+})
+
 test.describe('Carrito de compras', () => {
   test('agrega, modifica cantidades, quita y recalcula el total', async ({ page }) => {
+    await crearCuenta(page)
     await page.goto('/')
     await page.locator('.rejilla').getByRole('link', { name: /Camiseta Hope/ }).click()
     await expect(page.getByRole('heading', { name: 'Camiseta Hope', level: 1 })).toBeVisible()
@@ -74,8 +127,10 @@ test.describe('Carrito de compras', () => {
     await expect(total).toContainText('229.700')
     await expect(page.locator('.cabecera__contador')).toHaveText('3')
 
+    const guardado = page.waitForResponse((r) => r.url().includes('/clientes/carrito') && r.request().method() === 'PUT')
     await tiquete.locator('.item').filter({ hasText: 'Camiseta Hope' }).getByRole('button', { name: 'Quitar' }).click()
     await expect(total).toContainText('49.900')
+    await guardado
 
     await page.reload()
     await page.getByRole('button', { name: /Carrito/ }).click()
