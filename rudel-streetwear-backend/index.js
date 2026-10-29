@@ -4,6 +4,7 @@ const config = require('./config/entorno');
 const conectarDB = require('./config/db');
 const { asegurarAdministrador } = require('./datos/semilla');
 const app = require('./app');
+const { iniciarServidores } = require('./servidor');
 
 async function prepararAdministrador() {
   if (!config.adminContrasena) return;
@@ -20,10 +21,7 @@ async function iniciar() {
   console.log(`Conectado a MongoDB Atlas (base de datos: ${conexion.name})`);
   await prepararAdministrador();
 
-  app.listen(config.puerto, () => {
-    console.log(`Servidor en http://localhost:${config.puerto}`);
-    console.log(`Documentación en ${config.apiUrl}/api-docs`);
-  });
+  iniciarServidores(app);
 }
 
 iniciar().catch((error) => {

@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const PUERTO = Number(process.env.PORT) || 3100;
 const ADMIN = { usuario: 'admin', contrasena: 'RudelPruebas2026' };
 
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET ??= 'secreto-de-pruebas-e2e-con-largo-suficiente-123456';
 process.env.FRONTEND_URL ??= 'http://localhost:4173';
 process.env.API_URL ??= `http://localhost:${PUERTO}`;
 

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const request = require('supertest');
 
 process.env.NODE_ENV = 'production';
-process.env.JWT_SECRET = 'secreto-de-prueba-para-produccion';
+process.env.JWT_SECRET = 'secreto-de-prueba-para-produccion-con-largo-suficiente';
 process.env.API_URL = 'https://api.rudel.test';
 process.env.PROXIES_CONFIABLES = '1';
 

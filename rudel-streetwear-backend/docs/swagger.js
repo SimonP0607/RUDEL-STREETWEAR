@@ -66,7 +66,7 @@ const opciones = {
           required: ['usuario', 'contrasena'],
           properties: {
             usuario: { type: 'string', example: 'admin' },
-            contrasena: { type: 'string', format: 'password', example: 'RudelAdmin2026' },
+            contrasena: { type: 'string', format: 'password', example: 'contrasena-de-ejemplo' },
           },
         },
         Sesion: {

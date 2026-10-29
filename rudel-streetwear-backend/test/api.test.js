@@ -4,6 +4,8 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET ??= 'secreto-de-prueba-solo-para-las-pruebas-automaticas';
 process.env.FRONTEND_URL = 'http://localhost:5173';
 process.env.API_URL = 'http://localhost:3000';
 

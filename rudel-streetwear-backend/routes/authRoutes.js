@@ -14,7 +14,7 @@ const router = Router();
  *       Si las credenciales son correctas, el servidor envía la cookie httpOnly `rudel_sesion`
  *       y devuelve en el cuerpo el `csrfToken`. Ese token se debe enviar en la cabecera
  *       `X-CSRF-Token` en toda petición POST, PUT, PATCH o DELETE.
- *       Se permiten 10 intentos fallidos cada 15 minutos.
+ *       Se permiten 5 intentos fallidos cada 15 minutos. La sesión dura 15 minutos y se renueva mientras se use.
  *     security: []
  *     requestBody:
  *       required: true

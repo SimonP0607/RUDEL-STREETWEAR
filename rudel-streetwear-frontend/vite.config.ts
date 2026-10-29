@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -26,8 +28,15 @@ const politicaSeguridad = (): Plugin => ({
 
 export default defineConfig(({ mode }) => {
   const entorno = loadEnv(mode, process.cwd(), '')
+  const archivoClave = resolve(process.cwd(), '../certs/key.pem')
+  const archivoCertificado = resolve(process.cwd(), '../certs/cert.pem')
+  const certificadosLocales = existsSync(archivoClave) && existsSync(archivoCertificado)
+  const https = certificadosLocales
+    ? { key: readFileSync(archivoClave), cert: readFileSync(archivoCertificado) }
+    : undefined
+  const objetivo = entorno.BACKEND_URL || (certificadosLocales ? 'https://localhost:3443' : 'http://localhost:3000')
   const proxy = {
-    '/api': { target: entorno.BACKEND_URL || 'http://localhost:3000', changeOrigin: true },
+    '/api': { target: objetivo, changeOrigin: true, secure: !certificadosLocales },
   }
 
   return {
@@ -37,8 +46,8 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
-    server: { proxy },
-    preview: { proxy },
+    server: { proxy, https },
+    preview: { proxy, https },
     css: {
       preprocessorOptions: {
         scss: {

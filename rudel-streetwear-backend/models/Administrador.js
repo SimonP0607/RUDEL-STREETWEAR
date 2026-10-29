@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const config = require('../config/entorno');
+
+const ROLES = ['admin'];
 
 const administradorSchema = new mongoose.Schema(
   {
@@ -14,16 +17,17 @@ const administradorSchema = new mongoose.Schema(
     contrasena: {
       type: String,
       required: [true, 'La contraseña es obligatoria'],
-      minlength: [8, 'La contraseña debe tener al menos 8 caracteres'],
+      minlength: [config.largoMinimoContrasena, `La contraseña debe tener al menos ${config.largoMinimoContrasena} caracteres`],
       select: false,
     },
+    rol: { type: String, enum: ROLES, default: 'admin' },
   },
   { timestamps: true, versionKey: false }
 );
 
 administradorSchema.pre('save', async function () {
   if (!this.isModified('contrasena')) return;
-  this.contrasena = await bcrypt.hash(this.contrasena, 10);
+  this.contrasena = await bcrypt.hash(this.contrasena, config.rondasBcrypt);
 });
 
 administradorSchema.methods.compararContrasena = function (texto) {

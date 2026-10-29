@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const ctrl = require('../controllers/productoController');
 const validarId = require('../middlewares/validarId');
-const { requiereAdmin, protegerEscritura } = require('../middlewares/autenticacion');
+const { protegerLectura, protegerEscritura } = require('../middlewares/autenticacion');
 
 const router = Router();
 
@@ -83,7 +83,7 @@ router.post('/', protegerEscritura, ctrl.crear);
  *               items: { $ref: '#/components/schemas/Producto' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.get('/admin', requiereAdmin, ctrl.listarTodos);
+router.get('/admin', protegerLectura, ctrl.listarTodos);
 
 /**
  * @openapi
@@ -105,7 +105,7 @@ router.get('/admin', requiereAdmin, ctrl.listarTodos);
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       404: { $ref: '#/components/responses/NoEncontrado' }
  */
-router.get('/admin/:id', requiereAdmin, validarId, ctrl.obtenerAdmin);
+router.get('/admin/:id', protegerLectura, validarId, ctrl.obtenerAdmin);
 
 /**
  * @openapi

@@ -20,7 +20,9 @@ function manejadorErrores(err, req, res, next) {
   }
 
   if (err instanceof mongoose.Error.ValidationError) {
-    const detalles = Object.values(err.errors).map((e) => e.message);
+    const detalles = Object.values(err.errors).map((e) =>
+      e instanceof mongoose.Error.CastError ? `El campo "${e.path}" no tiene un formato válido` : e.message
+    );
     return res.status(400).json({ error: 'Datos no válidos', detalles });
   }
 
@@ -41,7 +43,7 @@ function manejadorErrores(err, req, res, next) {
     return res.status(400).json({ error: 'El cuerpo de la petición no es un JSON válido' });
   }
 
-  console.error(err);
+  console.error(new Date().toISOString(), req.method, req.originalUrl, err);
   res.status(500).json({ error: 'Error interno del servidor' });
 }
 

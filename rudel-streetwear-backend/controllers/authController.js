@@ -1,9 +1,11 @@
 const bcrypt = require('bcryptjs');
+const config = require('../config/entorno');
 const Administrador = require('../models/Administrador');
 const { HttpError } = require('../middlewares/manejadorErrores');
 const { crearSesion, cerrarSesion, leerSesion } = require('../middlewares/autenticacion');
+const { registrarEvento } = require('../middlewares/registro');
 
-const HASH_FICTICIO = bcrypt.hashSync('rudel-hash-ficticio', 10);
+const HASH_FICTICIO = bcrypt.hashSync('rudel-hash-ficticio', config.rondasBcrypt);
 
 const datosPublicos = (administrador) => ({
   _id: administrador._id,
@@ -22,7 +24,10 @@ async function iniciarSesion(req, res) {
     ? await administrador.compararContrasena(contrasena)
     : await bcrypt.compare(contrasena, HASH_FICTICIO);
 
-  if (!administrador || !valida) throw new HttpError(401, 'Usuario o contraseña incorrectos');
+  if (!administrador || !valida) {
+    registrarEvento('login_fallido', { ip: req.ip, usuario: usuario.trim().toLowerCase().slice(0, 60) });
+    throw new HttpError(401, 'Usuario o contraseña incorrectos');
+  }
 
   const csrfToken = crearSesion(res, administrador);
   res.json({ administrador: datosPublicos(administrador), csrfToken });
