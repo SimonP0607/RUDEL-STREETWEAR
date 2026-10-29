@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Categoria, Producto } from '@/types'
 import { categoriasApi } from '@/services/categorias'
@@ -9,6 +9,10 @@ import FiltroCategorias from '@/components/FiltroCategorias.vue'
 import TarjetaProducto from '@/components/TarjetaProducto.vue'
 import PortadaFotos from '@/components/PortadaFotos.vue'
 import CintaFotos from '@/components/CintaFotos.vue'
+import CategoriasFoto from '@/components/CategoriasFoto.vue'
+import ManifiestoRudel from '@/components/ManifiestoRudel.vue'
+import Lookbook from '@/components/Lookbook.vue'
+import ComoComprar from '@/components/ComoComprar.vue'
 import { vRevelar } from '@/directives/revelar'
 
 const ruta = useRoute()
@@ -84,6 +88,14 @@ function seleccionarCategoria(id: string | null) {
   router.replace({ name: 'catalogo', query: id ? { categoria: id } : {} })
 }
 
+async function irACategoria(id: string) {
+  await router.replace({ name: 'catalogo', query: { categoria: id } })
+  await nextTick()
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })),
+  )
+}
+
 onMounted(() => Promise.all([cargarCategorias(), cargarProductos()]))
 
 watch(categoriaSeleccionada, cargarProductos)
@@ -113,10 +125,13 @@ watch(categorias, (lista) => {
         <p class="portada__dato">
           <span class="portada__numero">{{ totalMostrado }}</span> prendas en catálogo
         </p>
+        <a href="#catalogo" class="boton boton--acento portada__ir">Ver el catálogo ↓</a>
       </div>
     </section>
 
     <CintaFotos />
+
+    <CategoriasFoto v-if="!categoriaSeleccionada" :categorias="categorias" :productos="productos" @seleccionar="irACategoria" />
 
     <section v-if="destacados.length && !categoriaSeleccionada" class="destacados" aria-labelledby="destacados-titulo">
       <div class="contenedor">
@@ -138,7 +153,13 @@ watch(categorias, (lista) => {
       </div>
     </section>
 
-    <section class="contenedor" aria-labelledby="catalogo-titulo">
+    <ManifiestoRudel v-if="!categoriaSeleccionada" :total-prendas="totalActivos" :total-categorias="categorias.length" />
+
+    <Lookbook v-if="!categoriaSeleccionada" />
+
+    <ComoComprar v-if="!categoriaSeleccionada" />
+
+    <section id="catalogo" class="contenedor catalogo__seccion" aria-labelledby="catalogo-titulo">
       <FiltroCategorias
         :categorias="categorias"
         :seleccionada="categoriaSeleccionada"
@@ -239,6 +260,10 @@ watch(categorias, (lista) => {
     padding-bottom: 0.6rem;
   }
 
+  &__ir {
+    width: fit-content;
+  }
+
   &__descripcion {
     max-width: 34rem;
     font-size: 1.05rem;
@@ -295,6 +320,11 @@ watch(categorias, (lista) => {
     color: var(--texto-suave);
     white-space: nowrap;
   }
+}
+
+.catalogo__seccion {
+  scroll-margin-top: 5rem;
+  padding-top: 2.4rem;
 }
 
 .destacados {
